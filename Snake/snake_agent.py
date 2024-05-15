@@ -8,7 +8,7 @@ import helper_plot as helper
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
-LEARNING_RATE = 0.002
+LEARNING_RATE = 0.001
 
 class Agent:
     
@@ -17,7 +17,7 @@ class Agent:
         self.epsilon = 0 # randomness
         self.gamma = 0.9
         self.memory = deque(maxlen=MAX_MEMORY) # remove old memories
-        self.model = Linear_QNet(41,600,3)
+        self.model = Linear_QNet(41,500,3)
         self.trainer = QTrainer(self.model, LEARNING_RATE, self.gamma)
 
     def get_state(self, game):
@@ -147,9 +147,9 @@ class Agent:
     # This is a very new thing for me.
     def get_action(self, state):
         # random moves: tradeoff exploration/exploitation
-        self.epsilon = 40 - self.n_games
+        self.epsilon = 80 - self.n_games
         final_move = [0,0,0]
-        if (random.randint(1,50) < self.epsilon):
+        '''if (random.randint(1,200) < self.epsilon):
             move = random.randint(0,2)
             final_move[move] = 1
         else:
@@ -157,7 +157,11 @@ class Agent:
             state0 = torch.tensor(state,dtype=torch.float)
             prediction = self.model(state0)
             move = torch.argmax(prediction).item()
-            final_move[move] = 1
+            final_move[move] = 1'''
+        state0 = torch.tensor(state,dtype=torch.float)
+        prediction = self.model(state0)
+        move = torch.argmax(prediction).item()
+        final_move[move] = 1
         return final_move
 
 def train():

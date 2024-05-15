@@ -46,6 +46,8 @@ class QTrainer:
     # I don't understand any torch function.
     def train_step(self, state, action, reward, new_state, done):
         state = torch.tensor(state, dtype=torch.float)
+        #state_tensor = torch.from_numpy(state)
+        #state = torch.tensor(state_tensor, dtype=torch.float)
         new_state = torch.tensor(new_state, dtype=torch.float)
         action = torch.tensor(action, dtype=torch.float)
         reward = torch.tensor(reward, dtype=torch.float)

@@ -29,7 +29,7 @@ BLUE2 = (0, 100, 255)
 BLACK = (0,0,0)
 
 BLOCK_SIZE = 20
-SPEED = 200
+SPEED = 60
 
 class SnakeGameAI:
     
@@ -81,22 +81,17 @@ class SnakeGameAI:
         
         # 3. check if game over
         game_over = False
-        if self.is_collision():
+        if self.is_collision() or self.frame_iteration >= 100*len(self.snake):
             game_over = True
-            self.reward -= 10*len(self.snake)
-            self.total_reward -= 10*len(self.snake)
-            return self.reward, game_over, self.score
-        if self.frame_iteration >= 100*len(self.snake):
-            game_over = True
-            self.reward -= 100*len(self.snake)
-            self.total_reward -= 100*len(self.snake)
+            self.reward -= max(10,len(self.snake))
+            self.total_reward -= max(10,len(self.snake))
             return self.reward, game_over, self.score
 
         # 4. place new food or just move
         if self.head == self.food:
             self.score += 1
-            self.reward += max(50,5*len(self.snake))
-            self.total_reward += max(50,5*len(self.snake))
+            self.reward += max(10,len(self.snake))
+            self.total_reward += max(10,len(self.snake))
             self.frame_iteration = 0
             self._place_food()
         # Remove the end of the snake if you move without eating.
@@ -152,13 +147,13 @@ class SnakeGameAI:
         elif (action[1] >= 1):
             self.direction = clock_wise[(indx+1)%len(clock_wise)] # Move right.
             if (pindx == (indx-1)%len(clock_wise)):
-                self.reward -= 1
-                self.total_reward -= 1
+                self.reward -= 3
+                self.total_reward -= 3
         else:
             self.direction = clock_wise[(indx-1+len(clock_wise))%len(clock_wise)] # Move left.
             if (pindx == (indx+1+len(clock_wise))%len(clock_wise)):
-                self.reward -= 1
-                self.total_reward -= 1
+                self.reward -= 3
+                self.total_reward -= 3
         x = self.head.x
         y = self.head.y
         if self.direction == Direction.RIGHT:
