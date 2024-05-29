@@ -17,35 +17,10 @@ class Agent:
         self.epsilon = 0 # randomness
         self.gamma = 0.9
         self.memory = deque(maxlen=MAX_MEMORY) # remove old memories
-        self.model = Linear_QNet(41,500,3)
+        self.model = Linear_QNet(26,500,3)
         self.trainer = QTrainer(self.model, LEARNING_RATE, self.gamma)
 
     def get_state(self, game):
-        head = game.snake[0]
-        point_l = Point(head.x - 20, head.y)
-        point_ll = Point(head.x - 40, head.y)
-        point_lll = Point(head.x - 60, head.y)
-        point_r = Point(head.x + 20, head.y)
-        point_rr = Point(head.x + 40, head.y)
-        point_rrr = Point(head.x + 60, head.y)
-        point_u = Point(head.x, head.y - 20)
-        point_uu = Point(head.x, head.y - 40)
-        point_uuu = Point(head.x, head.y - 60)
-        point_d = Point(head.x, head.y + 20)
-        point_dd = Point(head.x, head.y + 40)
-        point_ddd = Point(head.x, head.y + 60)
-        point_ur = Point(head.x + 20, head.y - 20)
-        point_uur = Point(head.x + 20, head.y - 40)
-        point_urr = Point(head.x + 40, head.y - 20)
-        point_dr = Point(head.x + 20, head.y + 20)
-        point_ddr = Point(head.x + 20, head.y + 40)
-        point_drr = Point(head.x + 40, head.y + 20)
-        point_dl = Point(head.x - 20, head.y + 20)
-        point_ddl = Point(head.x - 20, head.y + 40)
-        point_dll = Point(head.x - 40, head.y + 20)
-        point_ul = Point(head.x - 20, head.y - 20)
-        point_uul = Point(head.x - 20, head.y - 40)
-        point_ull = Point(head.x - 40, head.y - 20)
         dir_l = game.direction == Direction.LEFT
         dir_r = game.direction == Direction.RIGHT
         dir_u = game.direction == Direction.UP
@@ -63,45 +38,14 @@ class Agent:
             len(game.snake),
             (game.frame_iteration),
 
-            # Danger straight.
-            (dir_r and game.is_collision(point_r)) or
-            (dir_l and game.is_collision(point_l)) or
-            (dir_u and game.is_collision(point_u)) or
-            (dir_d and game.is_collision(point_d)),
-
-            # Danger right.
-            (dir_u and game.is_collision(point_r)) or
-            (dir_d and game.is_collision(point_l)) or
-            (dir_l and game.is_collision(point_u)) or
-            (dir_r and game.is_collision(point_d)),
-
-            # Danger left.
-            (dir_d and game.is_collision(point_r)) or
-            (dir_u and game.is_collision(point_l)) or
-            (dir_r and game.is_collision(point_u)) or
-            (dir_l and game.is_collision(point_d)),
-
-            # Danger further out.
-            game.is_collision(point_rr),
-            game.is_collision(point_ll),
-            game.is_collision(point_uu),
-            game.is_collision(point_dd),
-            game.is_collision(point_ur),
-            game.is_collision(point_dr),
-            game.is_collision(point_dl),
-            game.is_collision(point_ul),
-            game.is_collision(point_rrr),
-            game.is_collision(point_lll),
-            game.is_collision(point_uuu),
-            game.is_collision(point_ddd),
-            game.is_collision(point_uur),
-            game.is_collision(point_urr),
-            game.is_collision(point_ddr),
-            game.is_collision(point_drr),
-            game.is_collision(point_ddl),
-            game.is_collision(point_dll),
-            game.is_collision(point_uul),
-            game.is_collision(point_ull),
+            game.distance_to_danger(0),
+            game.distance_to_danger(1),
+            game.distance_to_danger(2),
+            game.distance_to_danger(3),
+            game.distance_to_danger(4),
+            game.distance_to_danger(5),
+            game.distance_to_danger(6),
+            game.distance_to_danger(7),
 
             # Direction
             dir_l,
@@ -122,11 +66,15 @@ class Agent:
             pp_d,
 
             # Food location
-            game.food.x < game.head.x, # food left
-            game.food.x > game.head.x, # food right
-            game.food.y < game.head.y, # food up
-            game.food.y < game.head.y, # food down
+            game.distance_to_food(3),
+            game.distance_to_food(1),
+            game.distance_to_food(0),
+            game.distance_to_food(2)
         ]
+        '''game.food.x < game.head.x, # food left
+        game.food.x > game.head.x, # food right
+        game.food.y < game.head.y, # food up
+        game.food.y < game.head.y, # food down'''
 
         return np.array(state, dtype=int)
 
@@ -149,7 +97,7 @@ class Agent:
         # random moves: tradeoff exploration/exploitation
         self.epsilon = 80 - self.n_games
         final_move = [0,0,0]
-        '''if (random.randint(1,200) < self.epsilon):
+        if (random.randint(1,200) < self.epsilon):
             move = random.randint(0,2)
             final_move[move] = 1
         else:
@@ -157,11 +105,11 @@ class Agent:
             state0 = torch.tensor(state,dtype=torch.float)
             prediction = self.model(state0)
             move = torch.argmax(prediction).item()
-            final_move[move] = 1'''
-        state0 = torch.tensor(state,dtype=torch.float)
+            final_move[move] = 1
+        '''state0 = torch.tensor(state,dtype=torch.float)
         prediction = self.model(state0)
         move = torch.argmax(prediction).item()
-        final_move[move] = 1
+        final_move[move] = 1'''
         return final_move
 
 def train():

@@ -57,6 +57,10 @@ class SnakeGameAI:
         self.food = None
         self._place_food()
         self.frame_iteration = 0
+    
+    def update_reward(self, reward = 1):
+        self.reward += reward
+        self.total_reward += reward
         
     def _place_food(self):
         x = random.randint(0, (self.w-BLOCK_SIZE )//BLOCK_SIZE )*BLOCK_SIZE 
@@ -64,6 +68,16 @@ class SnakeGameAI:
         self.food = Point(x, y)
         if self.food in self.snake:
             self._place_food()
+
+    def distance_to_food(self, direction):
+        if (direction == 0):
+            return (self.head.y - self.food.y)/BLOCK_SIZE
+        elif (direction == 2):
+            return -(self.head.y - self.food.y)/BLOCK_SIZE
+        elif (direction == 1):
+            return -(self.head.x - self.food.x)/BLOCK_SIZE
+        elif (direction == 3):
+            return (self.head.x - self.food.x)/BLOCK_SIZE
         
     def play_step(self, action):
         self.reward = 0
@@ -113,9 +127,45 @@ class SnakeGameAI:
         # hits itself
         if pt in self.snake[1:]:
             return True
-        
         return False
-        
+
+    def distance_to_danger(self, direction = 0):
+        pt = Point(self.head.x, self.head.y)
+        distance = 0
+        if (direction == 0):
+            while not (self.is_collision(pt)):
+                pt = Point(pt.x, pt.y - BLOCK_SIZE)
+                distance += 1
+        elif (direction == 1):
+            while not (self.is_collision(pt)):
+                pt = Point(pt.x + BLOCK_SIZE, pt.y - BLOCK_SIZE)
+                distance += 1
+        elif (direction == 2):
+            while not (self.is_collision(pt)):
+                pt = Point(pt.x + BLOCK_SIZE, pt.y)
+                distance += 1
+        elif (direction == 3):
+            while not (self.is_collision(pt)):
+                pt = Point(pt.x + BLOCK_SIZE, pt.y + BLOCK_SIZE)
+                distance += 1
+        elif (direction == 4):
+            while not (self.is_collision(pt)):
+                pt = Point(pt.x, pt.y + BLOCK_SIZE)
+                distance += 1
+        elif (direction == 5):
+            while not (self.is_collision(pt)):
+                pt = Point(pt.x - BLOCK_SIZE, pt.y + BLOCK_SIZE)
+                distance += 1
+        elif (direction == 6):
+            while not (self.is_collision(pt)):
+                pt = Point(pt.x - BLOCK_SIZE, pt.y)
+                distance += 1
+        elif (direction == 7):
+            while not (self.is_collision(pt)):
+                pt = Point(pt.x - BLOCK_SIZE, pt.y - BLOCK_SIZE)
+                distance += 1
+        return distance
+
     def _update_ui(self):
         self.display.fill(BLACK)
         i = 0
@@ -147,50 +197,40 @@ class SnakeGameAI:
         elif (action[1] >= 1):
             self.direction = clock_wise[(indx+1)%len(clock_wise)] # Move right.
             if (pindx == (indx-1)%len(clock_wise)):
-                self.reward -= 3
-                self.total_reward -= 3
+                self.update_reward(-1)
         else:
             self.direction = clock_wise[(indx-1+len(clock_wise))%len(clock_wise)] # Move left.
             if (pindx == (indx+1+len(clock_wise))%len(clock_wise)):
-                self.reward -= 3
-                self.total_reward -= 3
+                self.update_reward(-1)
         x = self.head.x
         y = self.head.y
         if self.direction == Direction.RIGHT:
             # Food is right.
             if (self.head.x < self.food.x):
-                self.reward += 1
-                self.total_reward += 1
+                self.update_reward(1)
             else:
-                self.reward -= 1
-                self.total_reward -= 1
+                self.update_reward(-1)
             x += BLOCK_SIZE
         elif self.direction == Direction.LEFT:
             # Food is left.
             if (self.head.x > self.food.x):
-                self.reward += 1
-                self.total_reward += 1
+                self.update_reward(1)
             else:
-                self.reward -= 1
-                self.total_reward -= 1
+                self.update_reward(-1)
             x -= BLOCK_SIZE
         elif self.direction == Direction.DOWN:
             # Food is down.
             if (self.food.y > self.head.y):
-                self.reward += 1
-                self.total_reward += 1
+                self.update_reward(1)
             else:
-                self.reward -= 1
-                self.total_reward -= 1
+                self.update_reward(-1)
             y += BLOCK_SIZE
         elif self.direction == Direction.UP:
             # Food is up.
             if (self.food.y < self.head.y):
-                self.reward += 1
-                self.total_reward += 1
+                self.update_reward(1)
             else:
-                self.reward -= 1
-                self.total_reward -= 1
+                self.update_reward(-1)
             y -= BLOCK_SIZE
             
         self.head = Point(x, y)
