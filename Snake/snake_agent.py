@@ -17,7 +17,7 @@ class Agent:
         self.epsilon = 0 # randomness
         self.gamma = 0.9
         self.memory = deque(maxlen=MAX_MEMORY) # remove old memories
-        self.model = Linear_QNet(26,500,3)
+        self.model = Linear_QNet(17,400,3)
         self.trainer = QTrainer(self.model, LEARNING_RATE, self.gamma)
 
     def get_state(self, game):
@@ -25,17 +25,8 @@ class Agent:
         dir_r = game.direction == Direction.RIGHT
         dir_u = game.direction == Direction.UP
         dir_d = game.direction == Direction.DOWN
-        p_l = game.previous_direction == Direction.LEFT
-        p_r = game.previous_direction == Direction.RIGHT
-        p_u = game.previous_direction == Direction.UP
-        p_d = game.previous_direction == Direction.DOWN
-        pp_l = game.prev_prev_dir == Direction.LEFT
-        pp_r = game.prev_prev_dir == Direction.RIGHT
-        pp_u = game.prev_prev_dir == Direction.UP
-        pp_d = game.prev_prev_dir == Direction.DOWN
         state = [
             # Size
-            len(game.snake),
             (game.frame_iteration),
 
             game.distance_to_danger(0),
@@ -53,28 +44,12 @@ class Agent:
             dir_u,
             dir_d,
 
-            # Prev direction
-            p_l,
-            p_r,
-            p_u,
-            p_d,
-
-            # Prev Prev direction
-            pp_l,
-            pp_r,
-            pp_u,
-            pp_d,
-
             # Food location
             game.distance_to_food(3),
             game.distance_to_food(1),
             game.distance_to_food(0),
             game.distance_to_food(2)
         ]
-        '''game.food.x < game.head.x, # food left
-        game.food.x > game.head.x, # food right
-        game.food.y < game.head.y, # food up
-        game.food.y < game.head.y, # food down'''
 
         return np.array(state, dtype=int)
 
