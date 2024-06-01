@@ -107,21 +107,17 @@ class Snake:
             # Distance to the food
             output.append(self.snake[0].x - self.fruit.pos.x - 1)  # Right
             if self.fruit.pos.x <= (self.snake[0].x - 1) and self.fruit.pos.y >= (self.snake[0].y + 1):
-                output.append(
-                    distance(self.snake[0].x - 1, self.fruit.pos.x, self.snake[0].y + 1,
+                output.append(distance(self.snake[0].x - 1, self.fruit.pos.x, self.snake[0].y + 1,
                              self.fruit.pos.y))  # ForwardRight
             else:
-                output.append(
-                    - distance(self.snake[0].x - 1, self.fruit.pos.x, self.snake[0].y + 1,
+                output.append(- distance(self.snake[0].x - 1, self.fruit.pos.x, self.snake[0].y + 1,
                                self.fruit.pos.y))  # ForwardRight
             output.append(self.fruit.pos.y - self.snake[0].y - 1)  # Forward
             if self.fruit.pos.x >= (self.snake[0].x + 1) and self.fruit.pos.y >= (self.snake[0].y + 1):
-                output.append(
-                    distance(self.snake[0].x + 1, self.fruit.pos.x, self.snake[0].y + 1,
+                output.append(distance(self.snake[0].x + 1, self.fruit.pos.x, self.snake[0].y + 1,
                              self.fruit.pos.x))  # ForwardLeft
             else:
-                output.append(
-                    - distance(self.snake[0].x + 1, self.fruit.pos.x, self.snake[0].y + 1,
+                output.append(-distance(self.snake[0].x + 1, self.fruit.pos.x, self.snake[0].y + 1,
                                self.fruit.pos.x))  # ForwardLeft
             output.append(self.fruit.pos.x - self.snake[0].x - 1)  # Left
 

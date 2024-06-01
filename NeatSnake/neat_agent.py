@@ -1,3 +1,4 @@
+import random
 import neat.population
 import neat_snake
 import snake as s
@@ -38,7 +39,7 @@ def train(genomes, config, printDetails = False):
 
     generation += 1
 
-    tick_speed = 130
+    tick_speed = 300
     if (printDetails):
         tick_speed = 30
     nets = []
@@ -78,10 +79,17 @@ def train(genomes, config, printDetails = False):
             snakes[x].move()
             output = nets[x].activate(snakes[x].vision())
             if (printDetails):
-                print(snakes[x].vision())
-                print(output)
+                pass
+                #print(snakes[x].vision())
+                #print(output)
             for  i in range(0,3):
                 if max(output) == output[i]:
+                    # Punish spinning in circles.
+                    snakes[x].turns.append(i)
+                    count = len(snakes[x].turns)-1
+                    if (count >= 3 and i != 1):
+                        if (snakes[x].turns[count] == snakes[x].turns[count-1] and snakes[x].turns[count] == snakes[x].turns[count-2] and snakes[x].turns[count] == snakes[x].turns[count-2]):
+                            ge[x].fitness -= 100
                     if i == 0:
                         snakes[x].direction = (snakes[x].direction+1)%4
                         break
@@ -90,30 +98,39 @@ def train(genomes, config, printDetails = False):
                     elif i == 2:
                         snakes[x].direction = (snakes[x].direction+3)%4
                         break
-                # reward moving towards the food, punish moving away.
-                '''if (snakes[x].distance_to_food(snakes[x].direction) > 0):
-                    ge[x].fitness += 10
-                else:
-                    ge[x].fitness -= 10'''
+                    elif i == 3:
+                        change = random.randint(0,2)
+                        if (change == 0):
+                            snakes[x].direction = (snakes[x].direction+1)%4
+                        elif (change == 2):
+                            snakes[x].direction = (snakes[x].direction+3)%4
+                        break
 
         for x, snk in enumerate(snakes):
             if snk.gameOver == 0:
+                # reward moving towards the food, punish moving away.
+                if not (snakes[x].distance_to_food(snakes[x].direction) < c.SIZE):
+                    ge[x].fitness -= 1
                 if snk.eat:
-                    ge[x].fitness += 1000
+                    ge[x].fitness += 100
                     snakes[x].eat = False
             elif snk.gameOver > 0:
                 # Crash into body.
                 if snk.gameOver == 1:
-                    ge[x].fitness -= 1000
+                    ge[x].fitness -= 10
                 # Crash into wall.
                 elif snk.gameOver == 2:
-                    ge[x].fitness -= 2000
+                    ge[x].fitness -= 100
                 # Time Up.
                 elif snk.gameOver == 3:
-                    ge[x].fitness -= 4000
-                draw = False
+                    ge[x].fitness -= 10
+                #draw = False
                 if snk.score > max_score:
                     max_score = snk.score
+                size = len(snk.snake)
+                snk.reset()
+                if (size == len(snk.snake)):
+                    ge[x].fitness -= 9000
                 nets.pop(x)
                 ge.pop(x)
                 snakes.pop(x)
@@ -137,7 +154,6 @@ def train(genomes, config, printDetails = False):
                 win.blit(score_label, (10, 100))
                 pygame.display.update()
             else:
-                #pass
                 draw = False
         except:
             pass
@@ -154,7 +170,7 @@ def run(config_file, new = False, filename = "neatsavedmodel.pkl", winner_filena
             pass
     p.add_reporter(neat.StdOutReporter(True))
     p.add_reporter(CustomCheckpoint(filename))
-    winner = p.run(train, 100)
+    winner = p.run(train, 1)
     with open(winner_filename, "wb") as f:
         pickle.dump(winner, f)
         f.close()

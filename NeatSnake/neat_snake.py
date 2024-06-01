@@ -27,11 +27,13 @@ class Snake:
         self.eat = False
         self.turn = 0
         self.gameOver = 0
+        self.turns = []
 
     def reset(self):
         self.score = 0
         self.eat = False
         self.turn = 0
+        self.turns = []
         self.gameOver = 0
         self.snake = []
         self.snake.append(Pos(int(c.WIDTH/c.BLOCK_SIZE)/2, int(c.HEIGHT/c.BLOCK_SIZE)/2))
@@ -57,16 +59,42 @@ class Snake:
         return Fruit(fruit_x,fruit_y)
     
     def distance_to_food(self, direction = 0):
-        distance = 0
+        sx = self.snake[0].x
+        fx = self.fruit.pos.x
+        sy = self.snake[0].y
+        fy = self.fruit.pos.y
         if (direction == 0):
-            return max((self.snake[0].y - self.fruit.pos.y),-1)
+            if (sy > fy):
+                return sy - fy
         elif (direction == 2):
-            return max(-(self.snake[0].y - self.fruit.pos.y),-1)
+            if (sy < fy):
+                return fy - sy
         elif (direction == 1):
-            return max(-(self.snake[0].x - self.fruit.pos.x),-1)
+            if (sx < fx):
+                return fx - sx
         elif (direction == 3):
-            return max((self.snake[0].x - self.fruit.pos.x),-1)
-        return distance
+            if (sx > fx):
+                return sx - fx
+        return c.SIZE + 2
+
+    def direction_to_food(self, direction = 0):
+        sx = self.snake[0].x
+        fx = self.fruit.pos.x
+        sy = self.snake[0].y
+        fy = self.fruit.pos.y
+        if (direction == 0):
+            if (sy > fy):
+                return 1
+        elif (direction == 2):
+            if (sy < fy):
+                return 1
+        elif (direction == 1):
+            if (sx < fx):
+                return 1
+        elif (direction == 3):
+            if (sx > fx):
+                return 1
+        return 0
 
     def is_collision(self, point = None):
         if (point == None):
@@ -79,7 +107,29 @@ class Snake:
         if (point.y < 0 or point.y >= c.HEIGHT/c.BLOCK_SIZE):
             return 2
         return 0
-    
+
+    def immediate_danger(self, direction = 0):
+        point = Pos(self.snake[0].x, self.snake[0].y)
+        if (direction == 0):
+            point = Pos(point.x, point.y - 1)
+        elif (direction == 2):
+            point = Pos(point.x + 1, point.y)
+        elif (direction == 4):
+            point = Pos(point.x, point.y + 1)
+        elif (direction == 6):
+            point = Pos(point.x - 1, point.y)
+        elif (direction == 1):
+            point = Pos(point.x + 1, point.y - 1)
+        elif (direction == 3):
+            point = Pos(point.x + 1, point.y + 1)
+        elif (direction == 5):
+            point = Pos(point.x - 1, point.y + 1)
+        elif (direction == 7):
+            point = Pos(point.x - 1, point.y - 1)
+        if (self.is_collision(point)):
+            return 1
+        return 0
+
     def distance_to_danger(self, direction = 0):
         distance = 0
         point = Pos(self.snake[0].x, self.snake[0].y)
@@ -138,16 +188,19 @@ class Snake:
         else:
             self.snake.pop()
         # Check if the snake has crashed.
-        if (self.turn > 100*len(self.snake)):
+        if (self.turn > c.SIZE*(self.score+1)*len(self.snake)):
             self.gameOver = 3
         if (self.gameOver == 0):
             self.gameOver = self.is_collision()
 
     def vision(self):
         vision = []
-        vision.append(self.direction)
+        '''for i in range(5):
+            vision.append(self.distance_to_danger((2*self.direction+6+i)%8))'''
         for i in range(5):
-            vision.append(self.distance_to_danger((self.direction+6+i)%8))
+            vision.append(self.immediate_danger((2*self.direction+6+i)%8))
+        '''for i in range(4):
+            vision.append(self.distance_to_food(i))'''
         for i in range(4):
-            vision.append(self.distance_to_food(i))
+            vision.append(self.direction_to_food((self.direction+3+i)%4))
         return vision

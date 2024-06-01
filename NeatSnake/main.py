@@ -120,7 +120,7 @@ def main(genomes, config):
                 loop = 0
                 if snk.tail == snk.loop_tail:
                     ge[x].fitness -= (9000000 - snk.tail)
-                    snk.gameOver = 30
+                    snk.gameOver = 3
             if snk.gameOver > 0:
                 if x == ind:
                     draw = False
