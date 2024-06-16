@@ -24,6 +24,8 @@ index = 0
 max_fitness = 0
 generation = 0
 max_score = 0
+scores = []
+avg = 0
 
 win = pygame.display.set_mode((c.WIDTH, c.HEIGHT))
 
@@ -35,13 +37,13 @@ def replay_genome(config_path, winner_filename = "neat_winner.pkl"):
     train(genomes, config, True)
 
 def train(genomes, config, printDetails = False):
-    global win, generation, draw, max_fitness, index, max_score, clock
+    global win, generation, draw, max_fitness, index, max_score, scores, avg, clock
 
     generation += 1
 
     tick_speed = 300
     if (printDetails):
-        tick_speed = 30
+        tick_speed = 10
     nets = []
     snakes = []
     ge = []
@@ -78,86 +80,48 @@ def train(genomes, config, printDetails = False):
         for x, snk in enumerate(snakes):
             snakes[x].move()
             output = nets[x].activate(snakes[x].vision())
-            if (printDetails):
-                pass
-                #print(snakes[x].vision())
-                #print(output)
-            for  i in range(0,3):
+            for  i in range(0,4):
                 if max(output) == output[i]:
-                    # Punish spinning in circles.
-                    snakes[x].turns.append(i)
-                    count = len(snakes[x].turns)-1
-                    if (count >= 3 and i != 1):
-                        if (snakes[x].turns[count] == snakes[x].turns[count-1] and snakes[x].turns[count] == snakes[x].turns[count-2] and snakes[x].turns[count] == snakes[x].turns[count-2]):
-                            ge[x].fitness -= 100
-                    if i == 0:
-                        snakes[x].direction = (snakes[x].direction+1)%4
-                        break
-                    elif i == 1:
-                        break
-                    elif i == 2:
-                        snakes[x].direction = (snakes[x].direction+3)%4
-                        break
-                    elif i == 3:
-                        change = random.randint(0,2)
-                        if (change == 0):
-                            snakes[x].direction = (snakes[x].direction+1)%4
-                        elif (change == 2):
-                            snakes[x].direction = (snakes[x].direction+3)%4
-                        break
+                    snakes[x].direction = i
 
         for x, snk in enumerate(snakes):
-            if snk.gameOver == 0:
-                # reward moving towards the food, punish moving away.
-                if not (snakes[x].distance_to_food(snakes[x].direction) < c.SIZE):
-                    ge[x].fitness -= 1
-                if snk.eat:
-                    ge[x].fitness += 100
-                    snakes[x].eat = False
-            elif snk.gameOver > 0:
-                # Crash into body.
-                if snk.gameOver == 1:
-                    ge[x].fitness -= 10
-                # Crash into wall.
-                elif snk.gameOver == 2:
-                    ge[x].fitness -= 100
-                # Time Up.
-                elif snk.gameOver == 3:
-                    ge[x].fitness -= 10
-                #draw = False
+            if snk.gameOver > 0:
+                ge[x].fitness = snk.fitness()
+                scores.append(snk.score)
                 if snk.score > max_score:
                     max_score = snk.score
-                size = len(snk.snake)
-                snk.reset()
-                if (size == len(snk.snake)):
-                    ge[x].fitness -= 9000
                 nets.pop(x)
                 ge.pop(x)
                 snakes.pop(x)
             if x < index and draw:
                 index = -1
+        
+        avg = sum(scores)/(len(scores)+1)
 
         try:
             if (snakes[index].gameOver == 0) and draw:
-                win.fill(c.BLACK)
+                win.fill(c.WHITE)
                 pygame.draw.rect(win, c.GREEN, pygame.Rect(snakes[index].snake[0].x * c.BLOCK_SIZE, snakes[index].snake[0].y * c.BLOCK_SIZE, c.BLOCK_SIZE, c.BLOCK_SIZE))
                 for i in range(1, len(snakes[index].snake)):
-                    pygame.draw.rect(win, c.BLUE, pygame.Rect(snakes[index].snake[i].x * c.BLOCK_SIZE, snakes[index].snake[i].y * c.BLOCK_SIZE, c.BLOCK_SIZE, c.BLOCK_SIZE))
-                pygame.draw.rect(win, c.RED, pygame.Rect(snakes[index].fruit.pos.x * c.BLOCK_SIZE, snakes[index].fruit.pos.y * c.BLOCK_SIZE, c.BLOCK_SIZE, c.BLOCK_SIZE))
-                score_label = STAT_FONT.render("Generations: " + str(generation - 1), 1, (128, 128, 128))
+                    color = c.BLUE
+                    if (i == len(snakes[index].snake) - 1):
+                        color = c.GREY
+                    pygame.draw.rect(win, color, pygame.Rect(snakes[index].snake[i].x * c.BLOCK_SIZE, snakes[index].snake[i].y * c.BLOCK_SIZE, c.BLOCK_SIZE, c.BLOCK_SIZE))
+                pygame.draw.rect(win, c.RED, pygame.Rect(snakes[index].fruit.x * c.BLOCK_SIZE, snakes[index].fruit.y * c.BLOCK_SIZE, c.BLOCK_SIZE, c.BLOCK_SIZE))
+                score_label = STAT_FONT.render("Generations: " + str(generation - 1), 1, c.BLACK)
                 win.blit(score_label, (10, 10))
-                score_label = STAT_FONT.render("Score: " + str(snakes[index].score), 1, (128, 128, 128))
+                score_label = STAT_FONT.render("Score: " + str(snakes[index].score), 1, c.BLACK)
                 win.blit(score_label, (10, 40))
-                score_label = STAT_FONT.render("Highscore: " + str(max_score), 1, (128, 128, 128))
+                score_label = STAT_FONT.render("Highscore: " + str(max_score), 1, c.BLACK)
                 win.blit(score_label, (10, 70))
-                score_label = STAT_FONT.render("Reward: " + str(ge[index].fitness), 1, (128, 128, 128))
+                score_label = STAT_FONT.render("Average: " + str(round(avg, 6)), 1, c.BLACK)
                 win.blit(score_label, (10, 100))
-                pygame.display.update()
+                pygame.display.flip()
             else:
                 draw = False
         except:
             pass
-        pygame.display.update()
+        pygame.display.flip()
 
 def run(config_file, new = False, filename = "neatsavedmodel.pkl", winner_filename = "neat_winner.pkl"):
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation, config_file)
@@ -170,11 +134,11 @@ def run(config_file, new = False, filename = "neatsavedmodel.pkl", winner_filena
             pass
     p.add_reporter(neat.StdOutReporter(True))
     p.add_reporter(CustomCheckpoint(filename))
-    winner = p.run(train, 1)
+    winner = p.run(train, 1000)
     with open(winner_filename, "wb") as f:
         pickle.dump(winner, f)
         f.close()
 
 run(config_path)
-for i in range(10):
+for i in range(20):
     replay_genome(config_path)
