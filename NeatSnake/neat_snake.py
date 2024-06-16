@@ -159,17 +159,12 @@ class Snake:
             wall = self.distance_to_wall(i)
             if (food < danger):
                 vision.append(1)
-                vision.append(0)
-                vision.append(0)
+                vision.append(danger)
+                vision.append(wall)
             else:
-                if (danger < wall):
-                    vision.append(0)
-                    vision.append(danger)
-                    vision.append(0)
-                else:
-                    vision.append(0)
-                    vision.append(danger)
-                    vision.append(1)
+                vision.append(0)
+                vision.append(danger)
+                vision.append(wall)
         for i in range(4):
             if (i == self.direction):
                 vision.append(1)
