@@ -91,7 +91,7 @@ class Snake:
         point = Pos(self.snake[0].x, self.snake[0].y)
         for i in range(c.SIZE+1):
             if (self.fruit.pos_collision(point)):
-                return i
+                return i - 1
             else:
                 point = point.point_in_direction(direction)
         return c.SIZE + 1
@@ -102,7 +102,7 @@ class Snake:
         while (0 <= point.x < c.SIZE) and (0 <= point.y < c.SIZE):
             point = point.point_in_direction(direction)
             distance += 1
-        return distance
+        return distance - 1
 
     def is_collision(self, point = None):
         if (point == None):
@@ -129,7 +129,7 @@ class Snake:
         while not (self.is_collision(point)):
             distance += 1
             point = point.point_in_direction(direction)
-        return distance
+        return distance - 1
     
     def move(self):
         self.turn += 1

@@ -16,7 +16,8 @@ pygame.font.init()
 
 import CONSTANTS as c
 
-STAT_FONT = pygame.font.SysFont("comicsans", 20)
+STAT_FONT = pygame.font.SysFont("comicsans", c.L_FONT)
+NODE_FONT = pygame.font.SysFont("comicsans", c.S_FONT)
 
 draw = True
 
@@ -27,7 +28,7 @@ max_score = 0
 scores = []
 avg = 0
 
-win = pygame.display.set_mode((c.WIDTH, c.HEIGHT))
+win = pygame.display.set_mode((c.WIDTH*2, c.HEIGHT))
 
 def replay_genome(config_path, winner_filename = "neat_winner.pkl"):
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation, config_path)
@@ -43,7 +44,7 @@ def train(genomes, config, printDetails = False):
 
     tick_speed = 300
     if (printDetails):
-        tick_speed = 10
+        tick_speed = 5
     nets = []
     snakes = []
     ge = []
@@ -79,7 +80,20 @@ def train(genomes, config, printDetails = False):
         
         for x, snk in enumerate(snakes):
             snakes[x].move()
-            output = nets[x].activate(snakes[x].vision())
+            vision = snakes[x].vision()
+            output = nets[x].activate(vision)
+            if (printDetails):
+                win.fill(c.WHITE)
+                for i in range(len(vision)):
+                    color = c.BLACK
+                    if (vision[i] != 0):
+                        color = c.RED
+                    pygame.draw.rect(win, color, pygame.Rect(c.WIDTH+c.S_FONT, 1.5*i*c.S_FONT + c.S_FONT, c.S_FONT, c.S_FONT))
+                for i in range(len(output)):
+                    color = c.BLACK
+                    if max(output) == output[i]:
+                        color = c.RED
+                    pygame.draw.rect(win, color, pygame.Rect(c.WIDTH*1.5+c.L_FONT, 1.5*i*c.L_FONT + c.L_FONT, c.L_FONT, c.L_FONT))
             for  i in range(0,4):
                 if max(output) == output[i]:
                     snakes[x].direction = i
@@ -100,7 +114,8 @@ def train(genomes, config, printDetails = False):
 
         try:
             if (snakes[index].gameOver == 0) and draw:
-                win.fill(c.WHITE)
+                if not printDetails:
+                    win.fill(c.WHITE)
                 pygame.draw.rect(win, c.GREEN, pygame.Rect(snakes[index].snake[0].x * c.BLOCK_SIZE, snakes[index].snake[0].y * c.BLOCK_SIZE, c.BLOCK_SIZE, c.BLOCK_SIZE))
                 for i in range(1, len(snakes[index].snake)):
                     color = c.BLUE
@@ -139,6 +154,7 @@ def run(config_file, new = False, filename = "neatsavedmodel.pkl", winner_filena
         pickle.dump(winner, f)
         f.close()
 
+
 run(config_path)
-for i in range(20):
+for i in range(5):
     replay_genome(config_path)
