@@ -11,6 +11,7 @@ config_path = os.path.join(local_dir, 'config-feedforward.txt')
 import neat
 import pickle
 from CustomCheckpointer import CustomCheckpoint
+from node_plots import plot_nodes
 
 pygame.font.init()
 
@@ -28,7 +29,7 @@ max_score = 0
 scores = []
 avg = 0
 
-win = pygame.display.set_mode((c.WIDTH*2, c.HEIGHT))
+win = pygame.display.set_mode((c.WIDTH, c.HEIGHT))
 
 def replay_genome(config_path, winner_filename = "neat_winner.pkl"):
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation, config_path)
@@ -39,6 +40,8 @@ def replay_genome(config_path, winner_filename = "neat_winner.pkl"):
 
 def train(genomes, config, printDetails = False):
     global win, generation, draw, max_fitness, index, max_score, scores, avg, clock
+    if printDetails:
+        win = pygame.display.set_mode((2*c.WIDTH, c.HEIGHT))
 
     generation += 1
 
@@ -81,22 +84,13 @@ def train(genomes, config, printDetails = False):
         for x, snk in enumerate(snakes):
             snakes[x].move()
             vision = snakes[x].vision()
-            output = nets[x].activate(vision)
+            outputs = nets[x].activate(vision)
             if (printDetails):
-                win.fill(c.WHITE)
-                for i in range(len(vision)):
-                    color = c.BLACK
-                    if (vision[i] != 0):
-                        color = c.RED
-                    pygame.draw.rect(win, color, pygame.Rect(c.WIDTH+c.S_FONT, 1.5*i*c.S_FONT + c.S_FONT, c.S_FONT, c.S_FONT))
-                for i in range(len(output)):
-                    color = c.BLACK
-                    if max(output) == output[i]:
-                        color = c.RED
-                    pygame.draw.rect(win, color, pygame.Rect(c.WIDTH*1.5+c.L_FONT, 1.5*i*c.L_FONT + c.L_FONT, c.L_FONT, c.L_FONT))
+                plot_nodes(win, vision, outputs)
             for  i in range(0,4):
-                if max(output) == output[i]:
+                if max(outputs) == outputs[i]:
                     snakes[x].direction = i
+                    break
 
         for x, snk in enumerate(snakes):
             if snk.gameOver > 0:
