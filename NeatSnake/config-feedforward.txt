@@ -6,7 +6,7 @@ reset_on_extinction   = True
 
 [DefaultStagnation]
 species_fitness_func = mean
-max_stagnation       = 5
+max_stagnation       = 10
 species_elitism      = 0
 
 [DefaultReproduction]
@@ -48,8 +48,8 @@ compatibility_disjoint_coefficient = 1.0
 compatibility_weight_coefficient   = 0.5
 
 # connection add/remove rates
-conn_add_prob           = 0.5
-conn_delete_prob        = 0.2
+conn_add_prob           = 0.4
+conn_delete_prob        = 0.1
 
 # connection enable options
 enabled_default         = False
@@ -57,11 +57,12 @@ enabled_mutate_rate     = 0.2
 
 feed_forward            = True
 initial_connection      = unconnected
+#unconnected
 #partial_nodirect 0.5
 
 # node add/remove rates
-node_add_prob           = 0.4
-node_delete_prob        = 0.3
+node_add_prob           = 0.2
+node_delete_prob        = 0.1
 
 # node response options
 response_init_mean      = 1.0

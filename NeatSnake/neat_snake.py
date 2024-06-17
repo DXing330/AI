@@ -190,8 +190,6 @@ class Snake:
         fitness = 0
         l = len(self.snake)
         if (self.win):
-            return 10000
-        if (l - 3 <= 0):
-            fitness -= c.REWARD*c.SIZE
-        fitness += (self.total_turns)+((l - 2)*c.REWARD*c.SIZE)
+            return (c.REWARD*c.SIZE*c.SIZE)*c.REWARD*c.REWARD
+        fitness += (self.total_turns)+(3*(l - 2)*c.REWARD*c.SIZE)
         return fitness
