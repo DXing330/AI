@@ -153,18 +153,37 @@ class Snake:
 
     def vision(self):
         vision = []
+        food_direction = -1
+        closest_danger = c.SIZE
+        closest_danger_direction = []
+        wall_distances = []
         for i in range(8):
+            closest_danger = c.SIZE
+            closest_danger_direction = []
             danger = self.distance_to_danger(i)
-            food = self.distance_to_food(i)
+            if (danger < closest_danger):
+                closest_danger_direction.clear()
+                closest_danger = danger
+                closest_danger_direction.append(i)
+            elif (danger == closest_danger):
+                closest_danger_direction.append(i)
+            if food_direction < 0:
+                food = self.distance_to_food(i)
+                if (food < c.SIZE):
+                    food_direction = i
             wall = self.distance_to_wall(i)
-            if (food < danger):
+            wall_distances.append(wall)
+        for i in range(8):
+            if i == food_direction:
                 vision.append(1)
-                vision.append(danger)
-                vision.append(wall)
             else:
                 vision.append(0)
-                vision.append(danger)
-                vision.append(wall)
+            if i in closest_danger_direction:
+                vision.append(1)
+            else:
+                vision.append(0)
+            vision.append(wall_distances[i])
+        # Keep track of you and your tail's direction.
         for i in range(4):
             if (i == self.direction):
                 vision.append(1)

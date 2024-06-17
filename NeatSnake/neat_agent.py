@@ -150,5 +150,5 @@ def run(config_file, new = False, filename = "neatsavedmodel.pkl", winner_filena
 
 
 run(config_path)
-for i in range(5):
+for i in range(10):
     replay_genome(config_path)
