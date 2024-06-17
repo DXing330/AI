@@ -91,7 +91,7 @@ class Snake:
         point = Pos(self.snake[0].x, self.snake[0].y)
         for i in range(c.SIZE+1):
             if (self.fruit.pos_collision(point)):
-                return i - 1
+                return i
             else:
                 point = point.point_in_direction(direction)
         return c.SIZE + 1
@@ -102,7 +102,7 @@ class Snake:
         while (0 <= point.x < c.SIZE) and (0 <= point.y < c.SIZE):
             point = point.point_in_direction(direction)
             distance += 1
-        return distance - 1
+        return distance
 
     def is_collision(self, point = None):
         if (point == None):
@@ -129,7 +129,7 @@ class Snake:
         while not (self.is_collision(point)):
             distance += 1
             point = point.point_in_direction(direction)
-        return distance - 1
+        return distance
     
     def move(self):
         self.turn += 1
@@ -153,36 +153,27 @@ class Snake:
 
     def vision(self):
         vision = []
-        food_direction = -1
-        closest_danger = c.SIZE
-        closest_danger_direction = []
-        wall_distances = []
+        food_found = False
         for i in range(8):
-            closest_danger = c.SIZE
-            closest_danger_direction = []
-            danger = self.distance_to_danger(i)
-            if (danger < closest_danger):
-                closest_danger_direction.clear()
-                closest_danger = danger
-                closest_danger_direction.append(i)
-            elif (danger == closest_danger):
-                closest_danger_direction.append(i)
-            if food_direction < 0:
+            if not food_found:
                 food = self.distance_to_food(i)
                 if (food < c.SIZE):
-                    food_direction = i
+                    food_found = True
+                    vision.append(1)
+                else:
+                    vision.append(0)
+            else:
+                vision.append(0)
+            danger = self.distance_to_danger(i)
             wall = self.distance_to_wall(i)
-            wall_distances.append(wall)
-        for i in range(8):
-            if i == food_direction:
+            if (danger < wall):
                 vision.append(1)
             else:
                 vision.append(0)
-            if i in closest_danger_direction:
+            try:
+                vision.append(1/wall)
+            except:
                 vision.append(1)
-            else:
-                vision.append(0)
-            vision.append(wall_distances[i])
         # Keep track of you and your tail's direction.
         for i in range(4):
             if (i == self.direction):

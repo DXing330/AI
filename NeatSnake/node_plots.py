@@ -9,7 +9,7 @@ def plot_nodes(window, inputs, outputs, hidden = []):
     height = size
     for i in range(len(inputs)):
         color = c.BLACK
-        if (inputs[i] != 0):
+        if (inputs[i] == 1):
             color = c.RED
         pygame.draw.rect(window, color, pygame.Rect(c.WIDTH+size, height, size, size))
         height += size * 1.5
