@@ -1,15 +1,17 @@
 aggregators = ["SUM", "MEAN", "MIN", "MAX", "MID"]
+neuron_types = ["INPUT", "OUTPUT", "BIAS", "HIDDEN"]
 
 # Need to keep track of vertices (nodes) and edges (links)
 
 # Edges: Connects two neurons with some weights.
 class Link:
-    def __init__(self, input, output, weight = 1):
+    def __init__(self, input, output, weight = 1, enabled = 1):
         self.input = input
         self.output = output
         self.input.outputs.append(self)
         self.output.inputs.append(self)
         self.weight = weight
+        self.enabled = enabled
 
 # Vertices: Takes in inputs and gives outputs.
 class Neuron:
@@ -33,7 +35,12 @@ class Genome:
     def connect_neurons(self):
         # Start from input layer and go to the output layer.
         for i in range(len(self.neurons)):
+            # Input layer has no inputs.
+            if (self.neurons.type == "INPUT"):
+                continue
             for j in range(len(self.links)):
-                if self.links[j].input == self.neurons[i]:
-                    # Might need a copy here.
-                    self.neurons[i].outputs.append(self.links[j].output)
+                # Some links are not enabled.
+                if self.links[j].enabled == 0:
+                    continue
+                if self.links[j].output == self.neurons[i]:
+                    self.neurons[i].inputs.append(self.links[j])
