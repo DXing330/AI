@@ -82,7 +82,6 @@ def train(genomes, config, printDetails = False):
                 quit()
         
         for x, snk in enumerate(snakes):
-            snakes[x].move()
             vision = snakes[x].vision()
             outputs = nets[x].activate(vision)
             if (printDetails):
@@ -91,6 +90,7 @@ def train(genomes, config, printDetails = False):
                 if max(outputs) == outputs[i]:
                     snakes[x].direction = i
                     break
+            snakes[x].move()
 
         for x, snk in enumerate(snakes):
             if snk.gameOver > 0:
@@ -143,7 +143,7 @@ def run(config_file, new = False, filename = "neatsavedmodel.pkl", winner_filena
             pass
     p.add_reporter(neat.StdOutReporter(True))
     p.add_reporter(CustomCheckpoint(filename))
-    winner = p.run(train, 1000)
+    winner = p.run(train)
     with open(winner_filename, "wb") as f:
         pickle.dump(winner, f)
         f.close()

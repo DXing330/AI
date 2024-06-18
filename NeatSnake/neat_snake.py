@@ -17,17 +17,17 @@ class Pos:
             return True
         return False
     
-    def point_in_direction(self, direction):
+    def point_in_direction(self, direction, distance = 1):
         x = self.x
         y = self.y
         if (direction == 7 or direction <= 1):
-            y -= 1
+            y -= distance
         elif (3 <= direction <= 5):
-            y += 1
+            y += distance
         if (1 <= direction <= 3):
-            x += 1
+            x += distance
         elif (5 <= direction <= 7):
-            x -= 1
+            x -= distance
         return Pos(x,y)
     
     def direction_to_point(self, Pos):
@@ -39,15 +39,12 @@ class Pos:
             return 0
         elif (Pos.y == self.y + 1):
             return 2
-
-class Fruit:
-    def __init__(self,x=0,y=0):
-        self.pos = Pos(x,y)
+        return -1
 
 class Snake:
     def __init__(self):
         self.snake = []
-        self.fruit = Fruit()
+        self.fruit = Pos(-1,-1)
         self.fruit = self.generate_fruit()
         # 0:up, 1:right, 2:down, 3:left
         self.direction = 1
@@ -64,11 +61,14 @@ class Snake:
         self.turns = []
         self.gameOver = 0
         self.snake = []
-        self.snake.append(Pos(int(c.SIZE)/2, int(c.SIZE)/2))
-        self.snake.append(Pos((int(c.SIZE)/2)-1, int(c.SIZE)/2))
-        self.direction = 1
-        self.t_direction = 1
-        self.fruit = self.generate_fruit()
+        head = Pos(int((c.SIZE-1)/2), int((c.SIZE-1)/2))
+        tail = head.point_in_direction(6)
+        self.snake.append(head)
+        self.snake.append(tail)
+        self.direction = -1
+        self.t_direction = -1
+        fruit_dir = random.randint(0,2)
+        self.fruit = head.point_in_direction(2*fruit_dir, 2)
 
     def eat_fruit(self):
         self.score += 1
@@ -154,9 +154,14 @@ class Snake:
     def vision(self):
         vision = []
         food_found = False
-        for i in range(8):
+        for i in range(4):
+            #danger = self.distance_to_danger(i)
+            #wall = self.distance_to_wall(i)
+            danger = self.distance_to_danger(2*i)
+            wall = self.distance_to_wall(2*i)
             if not food_found:
-                food = self.distance_to_food(i)
+                #food = self.distance_to_food(i)
+                food = self.distance_to_food(2*i)
                 if (food < c.SIZE):
                     food_found = True
                     vision.append(1)
@@ -164,8 +169,6 @@ class Snake:
                     vision.append(0)
             else:
                 vision.append(0)
-            danger = self.distance_to_danger(i)
-            wall = self.distance_to_wall(i)
             if (danger < wall):
                 vision.append(1)
             else:
@@ -175,6 +178,7 @@ class Snake:
             except:
                 vision.append(1)
         # Keep track of you and your tail's direction.
+        '''
         for i in range(4):
             if (i == self.direction):
                 vision.append(1)
@@ -184,6 +188,7 @@ class Snake:
                 vision.append(1)
             else:
                 vision.append(0)
+        '''
         return vision
     
     def fitness(self):
@@ -191,5 +196,6 @@ class Snake:
         l = len(self.snake)
         if (self.win):
             return (c.REWARD*c.SIZE*c.SIZE)*c.REWARD*c.REWARD
-        fitness += (self.total_turns)+(3*(l - 2)*c.REWARD*c.SIZE)
+        fitness += (self.total_turns)
+        fitness += (3*(l - 2)*c.REWARD*c.SIZE)
         return fitness

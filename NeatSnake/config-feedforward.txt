@@ -15,12 +15,12 @@ survival_threshold = 0.2
 min_species_size = 1
 
 [DefaultSpeciesSet]
-compatibility_threshold = 2.5
+compatibility_threshold = 2
 
 [DefaultGenome]
 # network parameters
 num_hidden              = 0
-num_inputs              = 32
+num_inputs              = 12
 num_outputs             = 4
 
 # node activation options
@@ -61,7 +61,7 @@ initial_connection      = unconnected
 #partial_nodirect 0.5
 
 # node add/remove rates
-node_add_prob           = 0.2
+node_add_prob           = 0.25
 node_delete_prob        = 0.1
 
 # node response options
