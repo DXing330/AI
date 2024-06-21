@@ -39,7 +39,6 @@ class Pos:
             return 0
         elif (Pos.y == self.y + 1):
             return 2
-        return -1
 
 class Snake:
     def __init__(self):
@@ -58,17 +57,21 @@ class Snake:
         self.win = False
         self.turn = 0
         self.total_turns = 0
-        self.turns = []
+        self.visited = []
         self.gameOver = 0
         self.snake = []
-        head = Pos(int((c.SIZE-1)/2), int((c.SIZE-1)/2))
-        tail = head.point_in_direction(6)
-        self.snake.append(head)
-        self.snake.append(tail)
         self.direction = -1
         self.t_direction = -1
-        fruit_dir = random.randint(0,2)
-        self.fruit = head.point_in_direction(2*fruit_dir, 2)
+        head = Pos(int(c.SIZE/2)-1, int(c.SIZE/2)-1)
+        self.snake.append(head)
+        self.snake.append(Pos(int(c.SIZE/2)-2, int(c.SIZE/2)-1))
+        self.fruit = self.generate_fruit()
+
+    def visit_tile(self):
+        tile_number = self.snake[0].x + (c.SIZE * self.snake[0].y)
+        if tile_number in self.visited:
+            return
+        self.visited.append(tile_number)
 
     def eat_fruit(self):
         self.score += 1
@@ -131,37 +134,46 @@ class Snake:
             point = point.point_in_direction(direction)
         return distance
     
-    def move(self):
+    def move(self, fp = True):
+        if (self.win):
+            self.gameOver = 1
+            return
         self.turn += 1
         self.total_turns += 1
         # Move the head of the snake first.
         head = self.snake[0]
         new_head = head.point_in_direction(self.direction*2)
         self.snake.insert(0, new_head)
+        if not fp:
+            if (self.gameOver == 0):
+                self.gameOver = self.is_collision()
+                if (self.gameOver > 0):
+                    return
+        if (self.fruit.is_collision(new_head.x,new_head.y)):
+            self.eat_fruit()
+            if (self.win):
+                self.gameOver = 1
+        else:
+            self.snake.pop()
+        self.t_direction = self.snake[len(self.snake)-1].direction_to_point(self.snake[len(self.snake)-2])
         if (self.gameOver == 0):
             self.gameOver = self.is_collision()
             if (self.gameOver > 0):
                 return
-        if (self.fruit.is_collision(new_head.x,new_head.y)):
-            self.eat_fruit()
-        else:
-            self.snake.pop()
-        self.t_direction = self.snake[len(self.snake)-1].direction_to_point(self.snake[len(self.snake)-2])
-        # Check if the snake has crashed.
         if (self.turn > c.SIZE*c.SIZE+1):
             self.gameOver = 3
 
-    def vision(self):
+    def fp_vision(self):
         vision = []
         food_found = False
-        for i in range(4):
-            #danger = self.distance_to_danger(i)
-            #wall = self.distance_to_wall(i)
-            danger = self.distance_to_danger(2*i)
-            wall = self.distance_to_wall(2*i)
+        for i in range(5):
+            if (self.win):
+                vision.append(0)
+                vision.append(0)
+                vision.append(0)
+                continue
             if not food_found:
-                #food = self.distance_to_food(i)
-                food = self.distance_to_food(2*i)
+                food = self.distance_to_food((2*(self.direction)+(i)+6)%8)
                 if (food < c.SIZE):
                     food_found = True
                     vision.append(1)
@@ -169,6 +181,36 @@ class Snake:
                     vision.append(0)
             else:
                 vision.append(0)
+            danger = self.distance_to_danger((2*(self.direction)+(i)+6)%8)
+            wall = self.distance_to_wall((2*(self.direction)+(i)+6)%8)
+            # Body in the way.
+            if (danger < wall and danger < food):
+                vision.append(1)
+            else:
+                vision.append(0)
+            try:
+                vision.append(1/wall)
+            except:
+                vision.append(1)
+        return vision
+    
+    def tp_vision(self, eight = True):
+        vision = []
+        food_found = False
+        for i in range(8):
+            if (i%2==1 and not eight):
+                continue
+            if not food_found:
+                food = self.distance_to_food(i)
+                if (food < c.SIZE):
+                    food_found = True
+                    vision.append(1)
+                else:
+                    vision.append(0)
+            else:
+                vision.append(0)
+            danger = self.distance_to_danger(i)
+            wall = self.distance_to_wall(i)
             if (danger < wall):
                 vision.append(1)
             else:
@@ -178,24 +220,31 @@ class Snake:
             except:
                 vision.append(1)
         # Keep track of you and your tail's direction.
-        '''
-        for i in range(4):
-            if (i == self.direction):
-                vision.append(1)
-            else:
-                vision.append(0)
-            if (i == self.t_direction):
-                vision.append(1)
-            else:
-                vision.append(0)
-        '''
+        if (eight):
+            for i in range(4):
+                if (i == self.direction):
+                    vision.append(1)
+                else:
+                    vision.append(0)
+                if (i == self.t_direction):
+                    vision.append(1)
+                else:
+                    vision.append(0)
+        return vision
+
+    def vision(self, fp, eight):
+        if (fp):
+            vision = self.fp_vision()
+        else:
+            vision = self.tp_vision(eight)
         return vision
     
     def fitness(self):
         fitness = 0
         l = len(self.snake)
         if (self.win):
-            return (c.REWARD*c.SIZE*c.SIZE)*c.REWARD*c.REWARD
+            fitness += (c.REWARD*c.SIZE*c.SIZE)*c.REWARD*c.REWARD
         fitness += (self.total_turns)
-        fitness += (3*(l - 2)*c.REWARD*c.SIZE)
+        fitness += (3*(l - 2)*c.REWARD)
+        #fitness += ((len(self.visited)**(3/2))*c.REWARD)
         return fitness
