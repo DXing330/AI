@@ -22,7 +22,7 @@ draw = True
 index = 0
 generation = 0
 max_score = 0
-recent_high = [0]
+recent_high = []
 scores = []
 avg = 0
 
@@ -106,7 +106,10 @@ def train(genomes, config, printDetails = False):
                 index = -1
         
         avg = sum(scores)/(len(scores)+1)
-        high = max(recent_high)
+        if (len(recent_high) > 0):
+            high = max(recent_high)
+        else:
+            high = 0
 
         try:
             if (snakes[index].gameOver == 0) and draw:
@@ -125,7 +128,7 @@ def train(genomes, config, printDetails = False):
                 win.blit(score_label, (10, 40))
                 score_label = STAT_FONT.render("Highscore: " + str(max_score), 1, c.BLACK)
                 win.blit(score_label, (10, 70))
-                score_label = STAT_FONT.render("Recent: " + str(max_score), 1, c.BLACK)
+                score_label = STAT_FONT.render("Recent: " + str(high), 1, c.BLACK)
                 win.blit(score_label, (10, 100))
                 score_label = STAT_FONT.render("Average: " + str(round(avg, 6)), 1, c.BLACK)
                 win.blit(score_label, (10, 130))

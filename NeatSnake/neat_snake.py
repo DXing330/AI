@@ -176,7 +176,7 @@ class Snake:
                 food = self.distance_to_food((2*(self.direction)+(i)+6)%8)
                 if (food < c.SIZE):
                     food_found = True
-                    vision.append(1)
+                    vision.append(1/food)
                 else:
                     vision.append(0)
             else:
@@ -184,8 +184,11 @@ class Snake:
             danger = self.distance_to_danger((2*(self.direction)+(i)+6)%8)
             wall = self.distance_to_wall((2*(self.direction)+(i)+6)%8)
             # Body in the way.
-            if (danger < wall and danger < food):
-                vision.append(1)
+            if (danger < wall):
+                try:
+                    vision.append(1/danger)
+                except:
+                    vision.append(1)
             else:
                 vision.append(0)
             try:
